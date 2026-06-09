@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface PlaylistCreatorProps {
   onPlaylistCreated: (name: string, photos: string[]) => void;
@@ -90,14 +91,12 @@ export const PlaylistCreator: React.FC<PlaylistCreatorProps> = ({
   // Step 1: Select photo count
   if (step === 'select-count') {
     return (
-      <View className="flex-1 bg-purple-100">
-        <View className="border-b-4 border-purple-600 px-5 py-4">
-          <Text className="text-3xl font-bold text-center text-purple-600">
-            📸 NOUVELLE PLAYLIST
-          </Text>
-        </View>
-
+      <SafeAreaView edges={['top']} className="flex-1 bg-purple-100">
         <View className="flex-1 items-center justify-center px-5 gap-4">
+          <View className="w-full bg-white rounded-xl border-2 border-purple-300 px-4 py-3 mb-2">
+            <Text className="text-xl font-bold text-center text-purple-600">📸 Nouvelle playlist</Text>
+          </View>
+
           <Text className="text-lg text-purple-600 text-center font-semibold mb-6">
             Combien de photos?
           </Text>
@@ -125,7 +124,7 @@ export const PlaylistCreator: React.FC<PlaylistCreatorProps> = ({
             <Text className="text-white font-semibold">Annuler</Text>
           </Pressable>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -134,14 +133,14 @@ export const PlaylistCreator: React.FC<PlaylistCreatorProps> = ({
     const filledCount = selectedPhotos.filter((p) => p).length;
 
     return (
-      <View className="flex-1 bg-purple-100">
-        <View className="border-b-4 border-purple-600 px-5 py-4">
-          <Text className="text-3xl font-bold text-center text-purple-600">
-            📸 PHOTOS
-          </Text>
-          <Text className="text-sm text-center text-purple-600 mt-2">
-            {filledCount}/{photoCount} photos sélectionnées
-          </Text>
+      <SafeAreaView edges={['top']} className="flex-1 bg-purple-100">
+        <View className="px-4 pt-4">
+          <View className="bg-white rounded-xl border-2 border-purple-300 px-4 py-3">
+            <Text className="text-xl font-bold text-center text-purple-600">📸 Photos</Text>
+            <Text className="text-sm text-center text-purple-500 mt-1">
+              {filledCount}/{photoCount} photos sélectionnées
+            </Text>
+          </View>
         </View>
 
         <ScrollView className="flex-1 px-4 py-4">
@@ -194,21 +193,19 @@ export const PlaylistCreator: React.FC<PlaylistCreatorProps> = ({
             <Text className="text-gray-700 font-semibold">← Retour</Text>
           </Pressable>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // Step 3: Name playlist
   if (step === 'name') {
     return (
-      <View className="flex-1 bg-purple-100">
-        <View className="border-b-4 border-purple-600 px-5 py-4">
-          <Text className="text-3xl font-bold text-center text-purple-600">
-            📝 NOM
-          </Text>
-        </View>
-
+      <SafeAreaView edges={['top']} className="flex-1 bg-purple-100">
         <View className="flex-1 items-center justify-center px-5 gap-6">
+          <View className="w-full bg-white rounded-xl border-2 border-purple-300 px-4 py-3">
+            <Text className="text-xl font-bold text-center text-purple-600">📝 Nom</Text>
+          </View>
+
           <Text className="text-lg text-purple-600 text-center font-semibold">
             Donnez un nom à votre playlist
           </Text>
@@ -247,7 +244,7 @@ export const PlaylistCreator: React.FC<PlaylistCreatorProps> = ({
             <Text className="text-white font-semibold">← Retour</Text>
           </Pressable>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 

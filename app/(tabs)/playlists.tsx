@@ -2,6 +2,7 @@ import { PlaylistCreator } from '@/components/playlist-creator';
 import { usePlaylistStorage } from '@/hooks/use-playlist-storage';
 import React, { useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PlaylistsScreen() {
   const { playlists, loading, addPlaylist, deletePlaylist } = usePlaylistStorage();
@@ -47,15 +48,14 @@ export default function PlaylistsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-purple-100">
-      {/* Header */}
-      <View className="border-b-4 border-purple-600 px-5 py-4">
-        <Text className="text-3xl font-bold text-center text-purple-600 tracking-wider mb-2">
-          🎬 MES PLAYLISTS
-        </Text>
-        <Text className="text-sm text-center text-purple-600">
-          {playlists.length} playlist{playlists.length !== 1 ? 's' : ''}
-        </Text>
+    <SafeAreaView edges={['top']} className="flex-1 bg-purple-100">
+      <View className="px-4 pt-4 pb-2">
+        <View className="bg-white rounded-xl border-2 border-purple-300 px-4 py-3">
+          <Text className="text-xl font-bold text-center text-purple-600">🎬 Mes playlists</Text>
+          <Text className="text-sm text-center text-purple-500 mt-1">
+            {playlists.length} playlist{playlists.length !== 1 ? 's' : ''}
+          </Text>
+        </View>
       </View>
 
       {/* Content */}
@@ -142,6 +142,6 @@ export default function PlaylistsScreen() {
           <Text className="text-white font-bold text-lg">+ Nouvelle Playlist</Text>
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

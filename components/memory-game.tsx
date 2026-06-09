@@ -1,6 +1,7 @@
 import { useMemoryGame } from '@/hooks/use-memory-game';
 import React, { useEffect, useMemo } from 'react';
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MemoryCard } from './memory-card';
 
 const windowWidth = Dimensions.get('window').width;
@@ -56,10 +57,8 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
   const cardWidth = ((windowWidth - 80) / gridSize) * CARD_SCALE;
 
   return (
-    <View className="flex-1 bg-purple-100">
-      {/* Header */}
-      <View className="border-b-4 border-purple-600 px-5 py-4">
-        <Text className="text-3xl font-bold text-center text-purple-600 tracking-wider mb-3">🧠 PIXEL MEM</Text>
+    <SafeAreaView edges={['top']} className="flex-1 bg-purple-100">
+      <View className="px-5 pt-4 pb-2">
         <View className="flex-row justify-around">
           <View className="flex-1 bg-purple-600 rounded-lg p-2 mr-2 items-center">
             <Text className="text-xs text-white font-semibold">Moves</Text>
@@ -141,7 +140,7 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
           </Pressable>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 
 interface MemoryCardProps {
@@ -14,6 +14,19 @@ interface MemoryCardProps {
   onPress: () => void;
   isMatched: boolean;
 }
+
+const CARD_RADIUS = 8;
+const CARD_BORDER = '#333';
+const CARD_BACK = '#9B59B6';
+const CARD_MATCH = '#00D95F';
+
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.2,
+  shadowRadius: 6,
+  elevation: 8,
+};
 
 const isImageUri = (symbol: string): boolean => {
   return symbol.includes('file://') || symbol.includes('http');
@@ -114,7 +127,6 @@ const styles = StyleSheet.create({
     flex: 1,
     aspectRatio: 1,
     margin: 4,
-    perspective: 1200,
   },
   card: {
     flex: 1,
@@ -126,26 +138,18 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: CARD_RADIUS,
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: CARD_BORDER,
     backfaceVisibility: 'hidden' as any,
   },
   cardFront: {
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 8,
+    ...cardShadow,
   },
   cardBack: {
-    backgroundColor: '#9B59B6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 8,
+    backgroundColor: CARD_BACK,
+    ...cardShadow,
   },
   symbol: {
     fontSize: 30,
@@ -158,8 +162,8 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   matched: {
-    backgroundColor: '#00D95F',
-    borderColor: '#00D95F',
+    backgroundColor: CARD_MATCH,
+    borderColor: CARD_MATCH,
     borderWidth: 4,
   },
   matchedText: {
@@ -168,12 +172,12 @@ const styles = StyleSheet.create({
   imageFrame: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: CARD_RADIUS,
     overflow: 'hidden',
   },
   matchedFrame: {
     borderWidth: 4,
-    borderColor: '#00D95F',
+    borderColor: CARD_MATCH,
   },
   matchedOverlay: {
     ...StyleSheet.absoluteFillObject,

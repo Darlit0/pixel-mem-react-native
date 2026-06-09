@@ -3,6 +3,7 @@ import { PlaylistCreator } from '@/components/playlist-creator';
 import { usePlaylistStorage } from '@/hooks/use-playlist-storage';
 import React, { useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type GameMode = 'menu' | 'emoji-setup' | 'playlist-select' | 'create-playlist' | 'summary' | 'game';
 
@@ -43,7 +44,7 @@ export const GameSetup: React.FC = () => {
   // Step 2: Menu - Choose between emojis or playlist
   if (gameMode === 'menu') {
     return (
-      <View className="flex-1 bg-[#f0e6ff]">
+      <SafeAreaView edges={['top']} className="flex-1 bg-[#f0e6ff]">
         <View className="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-[#9B59B6]/15" />
         <View className="absolute top-28 -right-10 h-28 w-28 rounded-full bg-[#FF3B9A]/15" />
         <View className="absolute bottom-24 -left-12 h-32 w-32 rounded-full bg-[#00D95F]/10" />
@@ -90,24 +91,20 @@ export const GameSetup: React.FC = () => {
           </Pressable>
 
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // Step 2: Emoji Setup - Choose count (4, 6, or 8)
   if (gameMode === 'emoji-setup') {
     return (
-      <View className="flex-1 bg-purple-100">
-        <View className="border-b-4 border-purple-600 px-5 py-4">
-          <Text className="text-3xl font-bold text-center text-purple-600">
-            😀 EMOJIS
-          </Text>
-          <Text className="text-sm text-center text-purple-600 mt-2">
-            Choisir la difficulté
-          </Text>
-        </View>
-
+      <SafeAreaView edges={['top']} className="flex-1 bg-purple-100">
         <View className="flex-1 items-center justify-center px-5 gap-4">
+          <View className="w-full bg-white rounded-xl border-2 border-purple-300 px-4 py-3 mb-2">
+            <Text className="text-xl font-bold text-center text-purple-600">😀 Emojis</Text>
+            <Text className="text-sm text-center text-purple-500 mt-1">Choisir la difficulté</Text>
+          </View>
+
           {[4, 6, 8].map((count) => (
             <Pressable
               key={count}
@@ -133,21 +130,19 @@ export const GameSetup: React.FC = () => {
             <Text className="text-white font-semibold">← Retour</Text>
           </Pressable>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // Step 3: Playlist Select - Choose or create playlist
   if (gameMode === 'playlist-select') {
     return (
-      <View className="flex-1 bg-purple-100">
-        <View className="border-b-4 border-purple-600 px-5 py-4">
-          <Text className="text-3xl font-bold text-center text-purple-600">
-            📸 PLAYLISTS
-          </Text>
-          <Text className="text-sm text-center text-purple-600 mt-2">
-            Choisir une playlist
-          </Text>
+      <SafeAreaView edges={['top']} className="flex-1 bg-purple-100">
+        <View className="px-4 pt-4">
+          <View className="bg-white rounded-xl border-2 border-purple-300 px-4 py-3">
+            <Text className="text-xl font-bold text-center text-purple-600">📸 Playlists</Text>
+            <Text className="text-sm text-center text-purple-500 mt-1">Choisir une playlist</Text>
+          </View>
         </View>
 
         {playlists.length === 0 ? (
@@ -235,7 +230,7 @@ export const GameSetup: React.FC = () => {
             <Text className="text-white font-semibold">← Retour</Text>
           </Pressable>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -246,14 +241,12 @@ export const GameSetup: React.FC = () => {
     const pairCount = isEmoji ? gameConfig.count : (gameConfig.photos?.length ?? gameConfig.count);
 
     return (
-      <View className="flex-1 bg-purple-100">
-        <View className="border-b-4 border-purple-600 px-5 py-4">
-          <Text className="text-3xl font-bold text-center text-purple-600">
-            ✅ RÉSUMÉ
-          </Text>
-        </View>
-
+      <SafeAreaView edges={['top']} className="flex-1 bg-purple-100">
         <ScrollView className="flex-1 px-5 py-4">
+          <View className="bg-white rounded-xl border-2 border-purple-300 p-4 mb-4">
+            <Text className="text-2xl font-bold text-center text-purple-600">✅ Résumé</Text>
+          </View>
+
           {/* Mode */}
           <View className="bg-white rounded-lg p-4 mb-4 border-2 border-purple-300">
             <Text className="text-sm text-purple-500 font-semibold mb-1">Mode de jeu</Text>
@@ -328,7 +321,7 @@ export const GameSetup: React.FC = () => {
             <Text className="text-white font-semibold">← Menu</Text>
           </Pressable>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
