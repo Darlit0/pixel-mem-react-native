@@ -1,30 +1,54 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Nintendo DS inspired memory game theme
+ * Retro, vibrant colors with a playful aesthetic
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// DS-inspired color palette
+const DSPurple = '#9B59B6';
+const DSOrange = '#FF6B35';
+const DSGreen = '#00D95F';
+const DSBlue = '#0099FF';
+const DSPink = '#FF3B9A';
+const DSYellow = '#FFD700';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#1a1a1a',
+    background: '#f5f5f5',
+    tint: DSBlue,
+    icon: '#666',
+    tabIconDefault: '#999',
+    tabIconSelected: DSBlue,
+    cardBack: DSPurple,
+    cardFront: '#fff',
+    success: DSGreen,
+    warning: DSOrange,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#fff',
+    background: '#1a1a1a',
+    tint: DSBlue,
+    icon: '#aaa',
+    tabIconDefault: '#777',
+    tabIconSelected: DSBlue,
+    cardBack: DSPurple,
+    cardFront: '#2a2a2a',
+    success: DSGreen,
+    warning: DSOrange,
   },
+};
+
+export const GameColors = {
+  cardBg: DSPurple,
+  cardHover: '#B776D1',
+  matched: DSGreen,
+  active: DSBlue,
+  accent1: DSOrange,
+  accent2: DSPink,
+  accent3: DSYellow,
+  bg: '#f0e6ff',
 };
 
 export const Fonts = Platform.select({
