@@ -1,6 +1,6 @@
 import { MemoryGame } from '@/components/memory-game';
 import { PlaylistCreator } from '@/components/playlist-creator';
-import { Playlist, usePlaylistStorage } from '@/hooks/use-playlist-storage';
+import { usePlaylistStorage } from '@/hooks/use-playlist-storage';
 import React, { useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 
@@ -18,13 +18,11 @@ export const GameSetup: React.FC = () => {
   const { playlists, addPlaylist } = usePlaylistStorage();
   const [gameMode, setGameMode] = useState<GameMode>('menu');
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
-  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [gameSessionKey, setGameSessionKey] = useState(0);
 
   const resetToMenu = () => {
     setGameMode('menu');
     setGameConfig(null);
-    setSelectedPlaylist(null);
   };
 
   // Step 1: Menu - Choose between emojis or playlist
@@ -49,17 +47,6 @@ export const GameSetup: React.FC = () => {
         <View className="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-[#9B59B6]/15" />
         <View className="absolute top-28 -right-10 h-28 w-28 rounded-full bg-[#FF3B9A]/15" />
         <View className="absolute bottom-24 -left-12 h-32 w-32 rounded-full bg-[#00D95F]/10" />
-
-        <View className="border-b-4 border-[#9B59B6] bg-white/70 px-5 py-5">
-          <View className="items-center rounded-3xl border-4 border-[#9B59B6] bg-white px-4 py-5 shadow-lg">
-            <Text className="text-4xl font-bold text-center text-[#9B59B6] tracking-wider">
-              🧠 PIXEL MEM
-            </Text>
-            <Text className="text-sm text-center text-[#7a4a93] mt-2">
-              Choisis un mode puis lance ta partie
-            </Text>
-          </View>
-        </View>
 
         <View className="flex-1 px-5 py-6 justify-center gap-5">
           {/* Emoji Mode */}
@@ -102,11 +89,6 @@ export const GameSetup: React.FC = () => {
             </View>
           </Pressable>
 
-          <View className="mt-2 flex-row justify-center gap-3">
-            <View className="rounded-full bg-white px-4 py-2 border-2 border-[#9B59B6]">
-              <Text className="text-[#9B59B6] font-bold text-xs">Nintendo DS vibe</Text>
-            </View>
-          </View>
         </View>
       </View>
     );
@@ -189,7 +171,6 @@ export const GameSetup: React.FC = () => {
                     return;
                   }
 
-                  setSelectedPlaylist(playlist);
                   setGameConfig({
                     mode: 'playlist',
                     count: validPhotos.length,
@@ -341,7 +322,6 @@ export const GameSetup: React.FC = () => {
             onPress={() => {
               setGameMode('menu');
               setGameConfig(null);
-              setSelectedPlaylist(null);
             }}
             className="bg-gray-400 rounded-lg py-3 items-center border-2 border-gray-500"
           >

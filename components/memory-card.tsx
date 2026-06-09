@@ -2,8 +2,6 @@ import React, { useEffect } from 'react';
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import Animated, {
     Easing,
-    Extrapolate,
-    interpolate,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
@@ -41,40 +39,22 @@ export const MemoryCard: React.FC<MemoryCardProps> = ({
     });
   }, [isFlipped, rotation]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(
-      rotation.value,
-      [0, 90, 180],
-      [0, 90, 180],
-      Extrapolate.CLAMP
-    );
-
+  const backAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
         { perspective: 1200 },
-        { rotateY: `${rotateY}deg` },
+        { rotateY: `${rotation.value}deg` },
       ],
     };
   });
 
   const frontAnimatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      rotation.value,
-      [0, 90, 180],
-      [0, 0, 1],
-      Extrapolate.CLAMP
-    );
-    return { opacity };
-  });
-
-  const backAnimatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      rotation.value,
-      [0, 90, 180],
-      [1, 0, 0],
-      Extrapolate.CLAMP
-    );
-    return { opacity };
+    return {
+      transform: [
+        { perspective: 1200 },
+        { rotateY: `${rotation.value + 180}deg` },
+      ],
+    };
   });
 
   return (
@@ -83,7 +63,7 @@ export const MemoryCard: React.FC<MemoryCardProps> = ({
       disabled={isFlipped || isMatched}
       style={styles.cardContainer}
     >
-      <Animated.View style={[styles.card, animatedStyle]}>
+      <Animated.View style={styles.card}>
         {/* Back - Shows ? (rendered first, positioned back) */}
         <Animated.View
           style={[
@@ -139,7 +119,6 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     position: 'relative',
-    transformOrigin: '50% 50%',
   },
   cardFace: {
     position: 'absolute',

@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
 export interface Card {
   id: number;
@@ -16,22 +16,148 @@ export interface UseMemoryGameOptions {
   playlistPhotos?: string[];
 }
 
+interface GameState {
+  cards: Card[];
+  moves: number;
+  matches: number;
+  gameWon: boolean;
+  isProcessing: boolean;
+  openedIds: number[];
+  gameRound: number;
+}
+
+type GameAction =
+  | { type: 'INIT'; cards: Card[] }
+  | { type: 'FLIP'; cardId: number; totalPairs: number }
+  | { type: 'RESOLVE_MISMATCH'; ids: number[] };
+
+const initialState: GameState = {
+  cards: [],
+  moves: 0,
+  matches: 0,
+  gameWon: false,
+  isProcessing: false,
+  openedIds: [],
+  gameRound: 0,
+};
+
+function gameReducer(state: GameState, action: GameAction): GameState {
+  switch (action.type) {
+    case 'INIT':
+      return {
+        cards: action.cards,
+        moves: 0,
+        matches: 0,
+        gameWon: false,
+        isProcessing: false,
+        openedIds: [],
+        gameRound: state.gameRound + 1,
+      };
+
+    case 'FLIP': {
+      if (state.isProcessing || state.gameWon || state.openedIds.length >= 2) {
+        return state;
+      }
+
+      const targetCard = state.cards.find((card) => card.id === action.cardId);
+      if (!targetCard || targetCard.isMatched || targetCard.isFlipped) {
+        return state;
+      }
+
+      const nextCards = state.cards.map((card) =>
+        card.id === action.cardId ? { ...card, isFlipped: true } : card
+      );
+
+      const nextOpenedIds = [...state.openedIds, action.cardId];
+      if (nextOpenedIds.length < 2) {
+        return {
+          ...state,
+          cards: nextCards,
+          openedIds: nextOpenedIds,
+        };
+      }
+
+      const first = nextCards.find((card) => card.id === nextOpenedIds[0]);
+      const second = nextCards.find((card) => card.id === nextOpenedIds[1]);
+
+      if (!first || !second) {
+        return {
+          ...state,
+          cards: nextCards,
+          openedIds: [],
+          isProcessing: false,
+        };
+      }
+
+      if (first.symbol === second.symbol) {
+        const matchedCards = nextCards.map((card) =>
+          nextOpenedIds.includes(card.id)
+            ? { ...card, isMatched: true, isFlipped: true }
+            : card
+        );
+
+        const nextMatches = state.matches + 1;
+        return {
+          ...state,
+          cards: matchedCards,
+          openedIds: [],
+          isProcessing: false,
+          moves: state.moves + 1,
+          matches: nextMatches,
+          gameWon: nextMatches >= action.totalPairs,
+        };
+      }
+
+      return {
+        ...state,
+        cards: nextCards,
+        openedIds: nextOpenedIds,
+        isProcessing: true,
+        moves: state.moves + 1,
+      };
+    }
+
+    case 'RESOLVE_MISMATCH': {
+      if (state.openedIds.length !== 2) {
+        return {
+          ...state,
+          openedIds: [],
+          isProcessing: false,
+        };
+      }
+
+      const shouldResolve = action.ids.every((id) => state.openedIds.includes(id));
+      if (!shouldResolve) {
+        return state;
+      }
+
+      const resetCards = state.cards.map((card) =>
+        action.ids.includes(card.id) && !card.isMatched
+          ? { ...card, isFlipped: false }
+          : card
+      );
+
+      return {
+        ...state,
+        cards: resetCards,
+        openedIds: [],
+        isProcessing: false,
+      };
+    }
+
+    default:
+      return state;
+  }
+}
+
 export const useMemoryGame = (options?: UseMemoryGameOptions) => {
   const mode = options?.mode || 'emoji';
   const count = options?.count || 8;
-  
-  // Stabilize playlistPhotos using useMemo
+
   const stablePhotos = useMemo(() => options?.playlistPhotos || [], [options?.playlistPhotos?.join('|') || '']);
 
-  const [cards, setCards] = useState<Card[]>([]);
-  const [moves, setMoves] = useState(0);
-  const [matches, setMatches] = useState(0);
-  const [gameWon, setGameWon] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [gameRound, setGameRound] = useState(0);
-  const gameRoundRef = useRef(0);
-  const processingRef = useRef(false);
-  const openedIdsRef = useRef<number[]>([]);
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const roundRef = useRef(0);
   const mismatchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearMismatchTimeout = useCallback(() => {
@@ -41,21 +167,13 @@ export const useMemoryGame = (options?: UseMemoryGameOptions) => {
     }
   }, []);
 
-  // Initialize game
   const initGame = useCallback(() => {
     clearMismatchTimeout();
-    processingRef.current = false;
-    openedIdsRef.current = [];
-    const nextRound = gameRoundRef.current + 1;
-    gameRoundRef.current = nextRound;
-    setGameRound(nextRound);
-    const roundOffset = nextRound * 1000;
+    roundRef.current += 1;
+    const roundOffset = roundRef.current * 1000;
 
-    // Create pairs of cards based on count
     const cardArray: Card[] = [];
-    
-    // Select symbols or photos based on mode.
-    // Always produce exactly `count` non-empty entries to avoid blank cards.
+
     const safePhotos = stablePhotos.filter((photo) => typeof photo === 'string' && photo.trim().length > 0);
     let symbols: string[] = [];
     if (mode === 'playlist' && safePhotos.length > 0) {
@@ -78,95 +196,53 @@ export const useMemoryGame = (options?: UseMemoryGameOptions) => {
       );
     }
 
-    // Shuffle
     const shuffled = cardArray.sort(() => Math.random() - 0.5);
-    setCards(shuffled);
-    setMoves(0);
-    setMatches(0);
-    setGameWon(false);
-    setIsProcessing(false);
+    dispatch({ type: 'INIT', cards: shuffled });
   }, [clearMismatchTimeout, mode, count, stablePhotos]);
 
-  // Handle card flip
   const flipCard = useCallback(
     (cardId: number) => {
-      if (processingRef.current || gameWon) return;
+      if (state.gameWon || state.isProcessing) return;
 
-      if (openedIdsRef.current.includes(cardId)) return;
-
-      const card = cards.find((c) => c.id === cardId);
-      if (!card || card.isMatched || card.isFlipped) return;
-
-      if (openedIdsRef.current.length >= 2) return;
-
-      // Haptic feedback
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-      const nextCards = cards.map((c) =>
-        c.id === cardId ? { ...c, isFlipped: true } : c
-      );
-      setCards(nextCards);
-      openedIdsRef.current = [...openedIdsRef.current, cardId];
-
-      if (openedIdsRef.current.length === 2) {
-        processingRef.current = true;
-        setIsProcessing(true);
-        setMoves((m) => m + 1);
-
-        const card1 = cards.find((c) => c.id === openedIdsRef.current[0]);
-        const card2 = cards.find((c) => c.id === openedIdsRef.current[1]);
-        if (!card1 || !card2) {
-          openedIdsRef.current = [];
-          processingRef.current = false;
-          setIsProcessing(false);
-          return;
-        }
-        const openedIds = [card1.id, card2.id];
-
-        // Check if match
-        if (card1?.symbol === card2?.symbol) {
-          // Match! 🎉
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-          const matchedCards = nextCards.map((c) =>
-            openedIds.includes(c.id)
-              ? { ...c, isMatched: true, isFlipped: true }
-              : c
-          );
-          setCards(matchedCards);
-          setMatches((m) => {
-            const nextMatches = m + 1;
-            if (nextMatches >= count) {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              setGameWon(true);
-            }
-            return nextMatches;
-          });
-          openedIdsRef.current = [];
-          processingRef.current = false;
-          setIsProcessing(false);
-        } else {
-          // No match, flip back after 1 second
-          clearMismatchTimeout();
-          mismatchTimeoutRef.current = setTimeout(() => {
-            setCards((currentCards) =>
-              currentCards.map((c) =>
-                openedIds.includes(c.id) && !c.isMatched
-                  ? { ...c, isFlipped: false }
-                  : c
-              )
-            );
-            openedIdsRef.current = [];
-            processingRef.current = false;
-            setIsProcessing(false);
-            mismatchTimeoutRef.current = null;
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          }, 1000);
-        }
-      }
+      dispatch({ type: 'FLIP', cardId, totalPairs: count });
     },
-    [cards, clearMismatchTimeout, count, gameWon]
+    [count, state.gameWon, state.isProcessing]
   );
+
+  useEffect(() => {
+    if (!state.isProcessing || state.openedIds.length !== 2) {
+      return;
+    }
+
+    const openedIds = [...state.openedIds];
+    clearMismatchTimeout();
+    mismatchTimeoutRef.current = setTimeout(() => {
+      dispatch({ type: 'RESOLVE_MISMATCH', ids: openedIds });
+      mismatchTimeoutRef.current = null;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }, 1000);
+
+    return () => {
+      clearMismatchTimeout();
+    };
+  }, [clearMismatchTimeout, state.isProcessing, state.openedIds]);
+
+  const previousMatchesRef = useRef(0);
+  useEffect(() => {
+    if (state.matches > previousMatchesRef.current) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    previousMatchesRef.current = state.matches;
+  }, [state.matches]);
+
+  const previousGameWonRef = useRef(false);
+  useEffect(() => {
+    if (state.gameWon && !previousGameWonRef.current) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    previousGameWonRef.current = state.gameWon;
+  }, [state.gameWon]);
 
   useEffect(() => {
     return () => {
@@ -175,15 +251,14 @@ export const useMemoryGame = (options?: UseMemoryGameOptions) => {
   }, [clearMismatchTimeout]);
 
   return {
-    cards,
-    moves,
-    matches,
-    gameWon,
-    flippedCards: cards.filter((c) => c.isFlipped && !c.isMatched).map((c) => c.id),
-    isProcessing,
+    cards: state.cards,
+    moves: state.moves,
+    matches: state.matches,
+    gameWon: state.gameWon,
+    isProcessing: state.isProcessing,
     initGame,
     flipCard,
     totalPairs: count,
-    gameRound,
+    gameRound: state.gameRound,
   };
 };
